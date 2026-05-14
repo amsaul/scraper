@@ -13,7 +13,16 @@
     "prod": "pm2 start ecosystem.config.js",
     "prod:stop": "pm2 stop all",
     "prod:logs": "pm2 logs",
-    "prod:monit": "pm2 monit"
+    "prod:monit": "pm2 monit",
+    "screenshot:analyze": "tsx -e \"import { screenshotService } from './src/services/screenshotService'; const stats = screenshotService.getErrorStats(); console.log('📊 Error Screenshot Statistics:', JSON.stringify(stats, null, 2))\"",
+    "screenshot:report": "tsx -e \"import { screenshotService } from './src/services/screenshotService'; const path = screenshotService.generateErrorReport(); console.log('✅ Error report generated at:', path); console.log('Open in browser to view all error screenshots')\"",
+    "screenshot:clean": "tsx -e \"import { screenshotService } from './src/services/screenshotService'; const count = screenshotService.clearOldScreenshots(30); console.log('✅ Cleaned up', count, 'old screenshots')\"",
+    "screenshot:list": "tsx -e \"import { screenshotService } from './src/services/screenshotService'; const screenshots = screenshotService.getErrorScreenshots(); console.log('📸 Error Screenshots:', screenshots.length); screenshots.slice(0, 10).forEach(s => console.log('  -', s.filename, s.metadata?.timestamp))\"",
+    "checkStatus": "tsx checkStatus.ts",
+    "analyzeDuplicates": "tsx analyzeDuplicates.ts",
+    "deduplicateDB": "tsx deduplicateDB.ts",
+    "db:clear": "tsx clearDatabase.ts --confirm",
+    "db:clear:check": "tsx clearDatabase.ts"
   },
   "keywords": [],
   "author": "",

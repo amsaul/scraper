@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-05-14T05:59:17.981Z",
+  "jobName": "PARSE_MEMBER_DETAIL",
+  "url": "https://www.parliament.go.ke/the-national-assembly/hon-nyikal-wambura-james",
+  "errorMessage": "Cast to date failed for value \"Invalid Date\" (type Date) at path \"dateOfBirth\"",
+  "screenshotPath": "C:\\Users\\Lenana Academy\\Downloads\\scraper\\screenshots\\errors\\error_PARSE_MEMBER_DETAIL_2026-05-14T05-57-25-950Z.png",
+  "pageTitle": "HON. NYIKAL WAMBURA JAMES | The Kenyan Parliament Website",
+  "pageUrl": "https://www.parliament.go.ke/the-national-assembly/hon-nyikal-wambura-james"
+}

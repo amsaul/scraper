@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-05-14T06:04:37.430Z",
+  "jobName": "PARSE_MEMBER_DETAIL",
+  "url": "https://www.parliament.go.ke/the-national-assembly/hon-ntutu-kitilai-ole",
+  "errorMessage": "Cast to date failed for value \"Invalid Date\" (type Date) at path \"dateOfBirth\"",
+  "screenshotPath": "C:\\Users\\Lenana Academy\\Downloads\\scraper\\screenshots\\errors\\error_PARSE_MEMBER_DETAIL_2026-05-14T06-04-37-058Z.png",
+  "pageTitle": "HON. NTUTU KITILAI OLE | The Kenyan Parliament Website",
+  "pageUrl": "https://www.parliament.go.ke/the-national-assembly/hon-ntutu-kitilai-ole"
+}

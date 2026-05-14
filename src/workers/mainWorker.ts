@@ -4,6 +4,7 @@ import { scraperEngine } from '../services/scraper';
 import Member from '../models/members';
 import { connectDB } from '../config/db';
 import { pdfService } from '../services/pdfServices';
+import { screenshotService } from '../services/screenshotService';
 import { scrapeQueue, pushQueue } from '../services/queue';
 import { JSDOM } from 'jsdom'; // You may need to install: npm install jsdom @types/jsdom
 
@@ -170,9 +171,14 @@ const worker = new Worker('verivote-scrape-queue', async (job: Job) => {
           console.log(`   └─ Party: ${mp.party}`);
           console.log(`   └─ Profile URL: ${mp.profileUrl || 'N/A'}`);
           
-          // Save to database
+          // Save to database with composite key to prevent duplicates
+          // Use fullName + constituency + role as unique identifier
           const savedMember = await Member.findOneAndUpdate(
-            { fullName: mp.name },
+            { 
+              fullName: mp.name,
+              role: 'MP',
+              constituency: mp.constituency // Include constituency to prevent name collisions
+            },
             {
               fullName: mp.name,
               party: mp.party,
@@ -738,8 +744,13 @@ const worker = new Worker('verivote-scrape-queue', async (job: Job) => {
         })) || [];
 
         // ===== Save to Database =====
+        // Use composite key: fullName + role + constituency to prevent duplicates
         const savedMember = await Member.findOneAndUpdate(
-          { fullName: memberData.fullName, role: memberData.role },
+          { 
+            fullName: memberData.fullName, 
+            role: memberData.role,
+            constituency: memberData.constituency
+          },
           {
             fullName: memberData.fullName,
             party: memberData.party,
@@ -778,7 +789,17 @@ const worker = new Worker('verivote-scrape-queue', async (job: Job) => {
         }
 
       } catch (error) {
-        console.error(`❌ Error in PARSE_MEMBER_DETAIL:`, error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error(`❌ Error in PARSE_MEMBER_DETAIL:`, errorMsg);
+        
+        // Capture error screenshot
+        await screenshotService.captureErrorScreenshot(
+          page,
+          errorMsg,
+          'PARSE_MEMBER_DETAIL',
+          job.data.url || 'unknown'
+        );
+        
         throw error;
       }
     }
@@ -793,11 +814,15 @@ const worker = new Worker('verivote-scrape-queue', async (job: Job) => {
         const mpsFromPDF = await pdfService.parseMPListPDF(pdfUrl);
         console.log(`✅ Found ${mpsFromPDF.length} MPs in PDF`);
         
-        // Save each MP to database
+        // Save each MP to database with composite key
         let savedCount = 0;
         for (const mp of mpsFromPDF) {
           const savedMember = await Member.findOneAndUpdate(
-            { fullName: mp.name },
+            { 
+              fullName: mp.name,
+              role: 'MP',
+              constituency: mp.constituency // Include constituency to prevent name collisions
+            },
             {
               fullName: mp.name,
               party: mp.party,
@@ -832,7 +857,17 @@ const worker = new Worker('verivote-scrape-queue', async (job: Job) => {
         console.log(`✅ Successfully saved ${savedCount} MPs from PDF`);
         
       } catch (error) {
-        console.error('❌ Failed to process MP list PDF:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error('❌ Failed to process MP list PDF:', errorMsg);
+        
+        // Capture error screenshot
+        await screenshotService.captureErrorScreenshot(
+          page,
+          errorMsg,
+          'PROCESS_MP_LIST_PDF',
+          'https://www.parliament.go.ke/sites/default/files/2025-12/List%20of%20Members%20by%20Parties%2013th%20Parliament%20as%20at%2002122025.pdf'
+        );
+        
         throw error;
       }
     }
@@ -944,7 +979,16 @@ else if (job.name === 'DISCOVER_GOVERNORS') {
     console.log(`✅ Saved ${savedCount} Governors`);
 
   } catch (error) {
-    console.error('❌ Error discovering Governors:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('❌ Error discovering Governors:', errorMsg);
+    
+    // Capture error screenshot
+    await screenshotService.captureErrorScreenshot(
+      page,
+      errorMsg,
+      'DISCOVER_GOVERNORS',
+      'https://www.cog.go.ke/'
+    );
   }
 }
 
@@ -1216,7 +1260,17 @@ else if (job.name === 'DISCOVER_GOVERNORS') {
         }
         
       } catch (error) {
-        console.error(`❌ Error parsing Governor details for ${county}:`, error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error(`❌ Error parsing Governor details for ${county}:`, errorMsg);
+        
+        // Capture error screenshot
+        await screenshotService.captureErrorScreenshot(
+          page,
+          errorMsg,
+          'PARSE_GOVERNOR_DETAIL',
+          job.data.url || 'unknown'
+        );
+        
         // Don't throw - we want to continue with other governors
       }
     }
@@ -1318,16 +1372,16 @@ else if (job.name === 'DISCOVER_GOVERNORS') {
     console.log('='.repeat(50));
 
   } catch (error) {
-    console.error('❌ JOB ERROR:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('❌ JOB ERROR:', errorMsg);
     
-    if (page) {
-      try {
-        await page.screenshot({ path: `error-${job.id}.png` });
-        console.log(`📸 Error screenshot saved: error-${job.id}.png`);
-      } catch (e) {
-        // Ignore
-      }
-    }
+    // Capture error screenshot to organized error folder
+    await screenshotService.captureErrorScreenshot(
+      page,
+      errorMsg,
+      job.name || 'unknown_job',
+      page?.url() || 'unknown'
+    );
     
     throw error;
   } finally {

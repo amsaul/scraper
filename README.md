@@ -114,6 +114,184 @@ members_export.json
 
 > This script connects to MongoDB, fetches all documents from the members collection, and saves them as formatted JSON.
 
+## Check Scraping Status
+
+The repository includes `checkStatus.ts` for monitoring queue progress and database statistics.
+
+Use this to verify:
+- All jobs are processed (no jobs stuck in active or waiting queues)
+- All required members and their details have been captured
+- Queue status (active, waiting, completed, failed jobs)
+- Database record counts (total members, MPs, governors)
+
+Run the status check:
+
+```bash
+npx tsx checkStatus.ts
+```
+
+### Output includes:
+
+**Queue Status:**
+- `Active jobs` - Currently processing jobs
+- `Waiting jobs` - Jobs queued but not yet processed
+- `Completed jobs` - Successfully completed jobs (shows last 1000)
+- `Failed jobs` - Failed jobs that need attention (shows last 1000)
+
+**Database Status:**
+- `Total members` - Total member records in database
+- `MPs` - Count of members with role 'MP'
+- `Governors` - Count of members with role 'Governor'
+
+**Expected Totals:**
+- MPs: 349 (290 constituency + 47 women + 12 nominated)
+- Governors: 47
+- Total: 396 members
+
+> When all jobs are done, `Active jobs` and `Waiting jobs` should both be 0, and your database counts should match or exceed the expected totals.
+
+## Handling Duplicate Members
+
+If you notice your MP or Governor count is significantly higher than expected (e.g., 700+ MPs instead of 349), you likely have duplicate records. This can happen if:
+- The scraper runs multiple times
+- Data is scraped with slight variations (e.g., "John Doe" vs "Hon. John Doe")
+- Upsert queries don't have specific enough filters
+
+### Analyze duplicates:
+
+First, understand the scale of the problem:
+
+```bash
+npx tsx analyzeDuplicates.ts
+```
+
+This shows:
+- How many duplicate names exist
+- Which MPs/Governors have multiple records
+- The difference between total records and unique members
+
+### Remove duplicates:
+
+Clean up the database by removing redundant records:
+
+```bash
+npx tsx deduplicateDB.ts
+```
+
+This script:
+- Groups members by (name, role, county)
+- Keeps the most recently updated record
+- Deletes all other duplicates
+- Shows before/after counts
+
+**Example output:**
+```
+❌ Duplicate Group: "john doe" (MP in Nairobi)
+   └─ Found 3 records:
+   ✅ KEEPING: ID=507f... | Updated: 2025-05-14T10:30:00Z
+   🗑️ DELETING: ID=507f... | Updated: 2025-05-13T10:30:00Z
+   🗑️ DELETING: ID=507f... | Updated: 2025-05-12T10:30:00Z
+   ✅ Deleted 2 duplicate(s)
+```
+
+After deduplication, verify with:
+
+```bash
+npx tsx checkStatus.ts
+```
+
+Your numbers should now match the expected totals (349 MPs, 47 Governors, 396 total).
+
+## Clear Database for Fresh Start
+
+To delete all scraped data and start scraping from scratch:
+
+### Preview what will be deleted:
+```bash
+npm run db:clear:check
+```
+
+This shows:
+- Total records to be deleted
+- Breakdown by role (MPs, Governors, etc.)
+- Confirmation before deletion
+
+### Delete all data:
+```bash
+npm run db:clear
+```
+
+This will:
+- Delete ALL member records from MongoDB
+- Show before/after database state
+- Confirm successful deletion
+
+### Verify the database is empty:
+```bash
+npm run checkStatus
+```
+
+Should show:
+- Total members: 0
+- MPs: 0
+- Governors: 0
+
+Then you can restart the scraper for a fresh data collection:
+
+```bash
+npm run dev
+# or trigger scraping via API
+curl http://localhost:3000/api/scrape/trigger
+```
+
+> ⚠️ **Warning**: Deletion is permanent. Back up your data first if needed:
+> ```bash
+> npx tsx exportData.ts
+> ```
+
+## Error Screenshots
+
+Error screenshots are automatically captured when the scraper encounters exceptions. They're saved to `screenshots/errors/` with metadata for easy debugging.
+
+### Quick Commands
+
+```bash
+# View error statistics
+npm run screenshot:analyze
+
+# Generate HTML report of all errors
+npm run screenshot:report
+
+# List recent error screenshots
+npm run screenshot:list
+
+# Clean up old screenshots (older than 30 days)
+npm run screenshot:clean
+```
+
+### View Error Report
+
+After generating, open the report in your browser:
+
+```bash
+# Windows
+start screenshots/errors/error_report.html
+
+# Mac
+open screenshots/errors/error_report.html
+
+# Linux
+xdg-open screenshots/errors/error_report.html
+```
+
+The report includes:
+- Screenshots of what failed
+- Error messages and timestamps
+- Statistics by job type and date
+- Full-page state when error occurred
+
+See [ERROR_SCREENSHOTS.md](ERROR_SCREENSHOTS.md) for detailed documentation.
+
 ## Important Environment Variables
 
 - `MONGODB_URI` - MongoDB connection string (required)
