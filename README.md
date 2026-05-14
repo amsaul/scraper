@@ -41,7 +41,7 @@ REDIS_PORT=6379
 The repository includes `docker-compose.yml` to start MongoDB and Redis:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 If using Docker Compose, set `MONGODB_URI` to the Mongo container:
@@ -77,8 +77,8 @@ npm run scheduler
 ```
 
 ### Start local development mode
-
-```bash
+### check the package.json to see how many files run concurrently using the below command
+```bash 
 npm run dev
 ```
 
@@ -329,11 +329,48 @@ GET /health
 
 - `GET /api/stats`
 
+## Data Validation & Cleaning
+
+The scraper includes comprehensive validation to prevent corrupted or invalid data (headers, labels, empty values) from being stored in the database.
+
+### How It Works
+
+- Invalid data patterns are detected (e.g., "vacant", "role", "education background")
+- Headers and form labels are filtered out
+- Invalid fields are set to `null` instead of storing garbage data
+- Required fields (name, role) trigger record rejection if invalid
+- Full-page extracted arrays (education, experience) have invalid entries filtered
+
+### Example
+
+**Before validation:**
+```json
+{ "fullName": "vacant", "role": "education background", "bio": "from" }
+```
+
+**After validation:**
+```json
+{ "fullName": null, "role": null, "bio": null }
+// Record rejected - missing required fields
+```
+
+### Invalid Data Patterns
+
+These are marked as null/empty:
+- Empty values: "N/A", "None", "Unknown", "Vacant", "Pending"
+- Headers: "Name", "Role", "Party", "Constituency", "Email"
+- Labels: "Biography", "Profile", "From", "To"
+- Too short: Values less than minimum length for field type
+- Wrong format: Invalid emails, dates, URLs
+
+See [DATA_VALIDATION.md](DATA_VALIDATION.md) for complete rules and customization.
+
 ## Notes
 
 - The app uses MongoDB to store member data and Redis for BullMQ queues.
 - Ensure MongoDB is reachable before starting the server.
 - If you need to change ports or container settings, adjust the `docker-compose.yml` and `.env` values accordingly.
+- Data validation helps maintain clean, reliable member records. See DATA_VALIDATION.md for details.
 
 ## License
 

@@ -6,6 +6,7 @@ import { connectDB } from '../config/db';
 import { pdfService } from '../services/pdfServices';
 import { screenshotService } from '../services/screenshotService';
 import { scrapeQueue, pushQueue } from '../services/queue';
+import { validateMemberData, validateName, validateRole, validateParty, validateLocation, validateEmail, validatePhone, validateText, sanitizeString } from '../utils/dataValidation';
 import { JSDOM } from 'jsdom'; // You may need to install: npm install jsdom @types/jsdom
 
 // Ensure database is connected
@@ -171,19 +172,29 @@ const worker = new Worker('verivote-scrape-queue', async (job: Job) => {
           console.log(`   └─ Party: ${mp.party}`);
           console.log(`   └─ Profile URL: ${mp.profileUrl || 'N/A'}`);
           
+          // Validate MP data
+          const validatedName = validateName(mp.name);
+          const validatedConstituency = validateLocation(mp.constituency);
+          const validatedParty = validateParty(mp.party);
+
+          if (!validatedName || !validatedConstituency) {
+            console.log(`   ⚠️ Skipping - Invalid data (name or constituency missing)`);
+            continue;
+          }
+
           // Save to database with composite key to prevent duplicates
           // Use fullName + constituency + role as unique identifier
           const savedMember = await Member.findOneAndUpdate(
             { 
-              fullName: mp.name,
+              fullName: validatedName,
               role: 'MP',
-              constituency: mp.constituency // Include constituency to prevent name collisions
+              constituency: validatedConstituency // Include constituency to prevent name collisions
             },
             {
-              fullName: mp.name,
-              party: mp.party,
-              county: mp.constituency,
-              constituency: mp.constituency,
+              fullName: validatedName,
+              party: validatedParty,
+              county: validatedConstituency,
+              constituency: validatedConstituency,
               role: 'MP',
               sourceUrls: mp.profileUrl ? [mp.profileUrl] : [url]
             },
@@ -743,24 +754,42 @@ const worker = new Worker('verivote-scrape-queue', async (job: Job) => {
           role: com.role
         })) || [];
 
+        // ===== Validate Data Before Saving =====
+        console.log(`\n🔍 Validating extracted data for ${memberData.fullName}...`);
+        
+        const validatedFullName = validateName(memberData.fullName);
+        const validatedRole = validateRole(memberData.role);
+        const validatedParty = validateParty(memberData.party);
+        const validatedConstituency = validateLocation(memberData.constituency);
+        const validatedEmail = validateEmail(memberData.email);
+        const validatedPhone = validatePhone(memberData.phone);
+        const validatedBio = validateText(memberData.bio);
+
+        if (!validatedFullName || !validatedRole) {
+          console.log(`❌ Validation failed - Missing required fields:`);
+          if (!validatedFullName) console.log(`   - Full Name: ${memberData.fullName}`);
+          if (!validatedRole) console.log(`   - Role: ${memberData.role}`);
+          throw new Error('Invalid member data - missing required fields');
+        }
+
         // ===== Save to Database =====
         // Use composite key: fullName + role + constituency to prevent duplicates
         const savedMember = await Member.findOneAndUpdate(
           { 
-            fullName: memberData.fullName, 
-            role: memberData.role,
-            constituency: memberData.constituency
+            fullName: validatedFullName, 
+            role: validatedRole,
+            constituency: validatedConstituency
           },
           {
-            fullName: memberData.fullName,
-            party: memberData.party,
-            county: memberData.constituency,
-            constituency: memberData.constituency,
-            role: memberData.role,
+            fullName: validatedFullName,
+            party: validatedParty,
+            county: validatedConstituency,
+            constituency: validatedConstituency,
+            role: validatedRole,
             sourceUrls: memberData.sourceUrls,
-            bio: memberData.bio,
-            email: memberData.email || undefined,
-            phone: memberData.phone || undefined,
+            bio: validatedBio,
+            email: validatedEmail || undefined,
+            phone: validatedPhone || undefined,
             website: memberData.website || undefined,
             profileImage: memberData.profileImage || undefined,
             dateOfBirth: memberData.dateOfBirth ? new Date(memberData.dateOfBirth) : undefined,
@@ -817,17 +846,27 @@ const worker = new Worker('verivote-scrape-queue', async (job: Job) => {
         // Save each MP to database with composite key
         let savedCount = 0;
         for (const mp of mpsFromPDF) {
+          // Validate MP data
+          const validatedName = validateName(mp.name);
+          const validatedConstituency = validateLocation(mp.constituency);
+          const validatedParty = validateParty(mp.party);
+
+          if (!validatedName || !validatedConstituency) {
+            console.log(`⚠️ Skipping invalid MP from PDF: "${mp.name}" - Invalid data`);
+            continue;
+          }
+
           const savedMember = await Member.findOneAndUpdate(
             { 
-              fullName: mp.name,
+              fullName: validatedName,
               role: 'MP',
-              constituency: mp.constituency // Include constituency to prevent name collisions
+              constituency: validatedConstituency // Include constituency to prevent name collisions
             },
             {
-              fullName: mp.name,
-              party: mp.party,
-              county: mp.constituency, // Using constituency as county
-              constituency: mp.constituency,
+              fullName: validatedName,
+              party: validatedParty,
+              county: validatedConstituency, // Using constituency as county
+              constituency: validatedConstituency,
               role: 'MP',
               sourceUrls: [pdfUrl]
             },
@@ -965,9 +1004,22 @@ else if (job.name === 'DISCOVER_GOVERNORS') {
     let savedCount = 0;
     for (const governor of pageGovernors) {
       try {
+        // Validate governor data
+        const validatedName = validateName(governor.fullName);
+        const validatedCounty = validateLocation(governor.county);
+
+        if (!validatedName || !validatedCounty) {
+          console.log(`⚠️ Skipping invalid governor: "${governor.fullName}" from "${governor.county}"`);
+          continue;
+        }
+
         const saved = await Member.findOneAndUpdate(
-          { role: 'Governor', county: governor.county },
-          governor,
+          { role: 'Governor', county: validatedCounty },
+          {
+            ...governor,
+            fullName: validatedName,
+            county: validatedCounty
+          },
           { upsert: true, new: true, returnDocument: 'after' }
         );
         if (saved) savedCount++;
