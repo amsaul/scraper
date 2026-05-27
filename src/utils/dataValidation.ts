@@ -173,21 +173,33 @@ export function validateEmail(email: any): string | null {
  * @param phone - Phone number to validate
  * @returns Sanitized phone or null if invalid
  */
-export function validatePhone(phone: any): string | null {
-  const sanitized = sanitizeString(phone);
 
-  if (!sanitized) {
-    return null;
+export function validatePhone(phone: string): string | null {
+  if (!phone) return null;
+  // Extract digits only
+  let digits = phone.replace(/\D/g, '');
+  if (digits.length < 7) return null;
+  
+  // Convert to E.164 for Kenya
+  if (digits.startsWith('0') && digits.length >= 10) {
+    digits = '+254' + digits.substring(1);
+  } else if (digits.startsWith('254') && !digits.startsWith('+')) {
+    digits = '+' + digits;
+  } else if (!digits.startsWith('+')) {
+    // Assume it's a local number with missing country code
+    digits = '+254' + digits;
   }
-
-  // Phone should have at least 7 digits
-  const digits = sanitized.replace(/\D/g, '');
-  if (digits.length < 7) {
-    return null;
-  }
-
-  return sanitized;
+  return digits;
 }
+
+// Also in validateMemberData, add validation for firstName/middleName/lastName
+// and gender if present. Example (add these lines inside the function):
+/*
+  if (data.firstName && !validateName(data.firstName)) memberWarnings.push('Invalid firstName');
+  if (data.middleName && !validateName(data.middleName)) memberWarnings.push('Invalid middleName');
+  if (data.lastName && !validateName(data.lastName)) memberWarnings.push('Invalid lastName');
+  if (data.gender && !['Male', 'Female', 'Other'].includes(data.gender)) memberWarnings.push('Invalid gender');
+*/
 
 /**
  * Validate role/position

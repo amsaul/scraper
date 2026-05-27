@@ -295,4 +295,25 @@ export class ScreenshotService {
   }
 }
 
+
+export function cleanupOldScreenshots(daysOld = 7) {
+  const screenshotsDir = path.join(process.cwd(), 'screenshots'); // adjust path as needed
+  if (!fs.existsSync(screenshotsDir)) return;
+  const now = Date.now();
+  const cutoff = now - daysOld * 24 * 60 * 60 * 1000;
+  fs.readdir(screenshotsDir, (err, files) => {
+    if (err) return;
+    files.forEach(file => {
+      const filePath = path.join(screenshotsDir, file);
+      fs.stat(filePath, (err, stats) => {
+        if (err) return;
+        if (stats.mtimeMs < cutoff) {
+          fs.unlink(filePath, () => {});
+        }
+      });
+    });
+  });
+}
+
+
 export const screenshotService = new ScreenshotService();

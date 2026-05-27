@@ -213,6 +213,11 @@ const ParliamentarySchema = {
 const MemberSchema = new mongoose.Schema({
   // ===== Core fields for all politicians =====
   fullName: { type: String, required: true, trim: true, index: true },
+  firstName: { type: String, trim: true, default: null },
+  middleName: { type: String, trim: true, default: null },
+  lastName: { type: String, trim: true, default: null },
+  gender: { type: String, enum: ['Male', 'Female', 'Other'], default: null },
+
   role: {
     type: String,
     required: true,
@@ -261,7 +266,7 @@ const MemberSchema = new mongoose.Schema({
   bio: String,
   dateOfBirth: Date,
   placeOfBirth: String,
-  gender: { type: String, enum: ["Male", "Female", "Other"] },
+  // gender: { type: String, enum: ["Male", "Female", "Other"] },
   
   // ===== Professional background =====
   education: [EducationSchema],
