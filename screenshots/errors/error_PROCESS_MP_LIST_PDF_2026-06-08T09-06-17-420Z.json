@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-06-08T09:06:17.497Z",
+  "jobName": "PROCESS_MP_LIST_PDF",
+  "url": "about:blank",
+  "errorMessage": "unable to verify the first certificate; if the root CA is installed locally, try running Node.js with --use-system-ca",
+  "screenshotPath": "C:\\Users\\Lenana Academy\\Desktop\\scraper\\screenshots\\errors\\error_PROCESS_MP_LIST_PDF_2026-06-08T09-06-17-420Z.png",
+  "pageTitle": "",
+  "pageUrl": "about:blank"
+}

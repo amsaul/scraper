@@ -386,7 +386,9 @@ export function validateMemberData(data: any): any {
     })).filter((c: any) => c.name) : undefined,
     professionalAffiliations: sanitizeStringArray(data.professionalAffiliations) || undefined,
     honours: sanitizeStringArray(data.honours) || undefined,
-    sourceUrls: Array.isArray(data.sourceUrls) ? data.sourceUrls.map(validateUrl).filter((u) => u !== null) : undefined
+    sourceUrls: Array.isArray(data.sourceUrls)
+      ? data.sourceUrls.map(validateUrl).filter((u: string | null): u is string => u !== null)
+      : undefined
   };
 }
 

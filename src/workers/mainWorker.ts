@@ -12,6 +12,7 @@ import {
   validateRole,
   validateParty,
   validateLocation,
+  validateUrl,
   validateEmail,
   validatePhone,
   validateText,
@@ -21,6 +22,7 @@ import { parseName } from '../utils/nameParser';
 import { inferGender } from '../utils/genderInference';
 import { parseDOB } from '../utils/dateParser';
 import { downloadAndRehostImage } from '../services/imageService';
+import { resolveCounty } from '../utils/constituencyCountyMap';
 
 // Ensure database is connected
 connectDB();
@@ -187,7 +189,7 @@ const worker = new Worker(
                 role: 'MP',
                 sourceUrls: mp.profileUrl ? [mp.profileUrl] : [url],
               },
-              { upsert: true, new: true, returnDocument: 'after' }
+              { upsert: true, returnDocument: 'after' }
             );
 
             console.log(`   └─ Status: ✅ Saved (ID: ${savedMember._id})`);
@@ -656,7 +658,13 @@ const worker = new Worker(
           const validatedFullName = validateName(memberData.fullName);
           const validatedRole = validateRole(memberData.role);
           const validatedParty = validateParty(memberData.party);
+          const validatedCounty = validateLocation(memberData.county);
           const validatedConstituency = validateLocation(memberData.constituency);
+          const validatedWebsite = validateUrl(memberData.website);
+          const validatedProfileImage = validateUrl(memberData.profileImage);
+          const validatedSourceUrls = Array.isArray(memberData.sourceUrls)
+            ? memberData.sourceUrls.map(validateUrl).filter((u): u is string => u !== null)
+            : [];
           const validatedEmail = validateEmail(memberData.email);
           const validatedPhone = validatePhone(memberData.phone);
           const validatedBio = validateText(memberData.bio);
@@ -669,6 +677,8 @@ const worker = new Worker(
           }
 
           // ----- Prepare update object with new fields -----
+          const inferredCounty = validatedCounty || (validatedConstituency ? resolveCounty(validatedConstituency) : null);
+
           const updateFields: any = {
             fullName: validatedFullName,
             firstName: parsedName.firstName,
@@ -676,15 +686,15 @@ const worker = new Worker(
             lastName: parsedName.lastName,
             gender: gender,
             party: validatedParty,
-            county: validatedConstituency, // temporary: same as constituency until county mapping is implemented
+            county: inferredCounty,
             constituency: validatedConstituency,
             role: validatedRole,
-            sourceUrls: memberData.sourceUrls,
+            sourceUrls: validatedSourceUrls.length ? validatedSourceUrls : undefined,
             bio: validatedBio,
             email: validatedEmail || undefined,
             phone: validatedPhone || undefined,
-            website: memberData.website || undefined,
-            profileImage: memberData.profileImage || undefined,
+            website: validatedWebsite || undefined,
+            profileImage: validatedProfileImage || undefined,
             dateOfBirth: parsedDOB || undefined,
             education: convertedEducation,
             experience: convertedExperience,
@@ -742,17 +752,17 @@ const worker = new Worker(
               console.log(`⚠️ Skipping invalid MP from PDF: "${mp.name}" - Invalid data`);
               continue;
             }
+            const updateDoc: any = {
+              fullName: validatedName,
+              party: validatedParty,
+              constituency: validatedConstituency,
+              role: 'MP',
+              sourceUrls: [pdfUrl],
+            };
             const savedMember = await Member.findOneAndUpdate(
               { fullName: validatedName, role: 'MP', constituency: validatedConstituency },
-              {
-                fullName: validatedName,
-                party: validatedParty,
-                county: validatedConstituency,
-                constituency: validatedConstituency,
-                role: 'MP',
-                sourceUrls: [pdfUrl],
-              },
-              { upsert: true, new: true, returnDocument: 'after' },
+              updateDoc,
+              { upsert: true, returnDocument: 'after' },
             );
             if (savedMember) savedCount++;
             if (savedCount % 50 === 0) console.log(`📊 Progress: ${savedCount}/${mpsFromPDF.length} MPs saved`);
@@ -850,7 +860,7 @@ const worker = new Worker(
               const saved = await Member.findOneAndUpdate(
                 { role: 'Governor', county: validatedCounty },
                 { ...governor, fullName: validatedName, county: validatedCounty },
-                { upsert: true, new: true, returnDocument: 'after' },
+                { upsert: true, returnDocument: 'after' },
               );
               if (saved) savedCount++;
             } catch (saveError) {
@@ -1001,7 +1011,7 @@ const worker = new Worker(
           updateFields.lastUpdated = new Date();
           updateFields.sourceUrls = [url];
           if (Object.keys(updateFields).length > 1) {
-            const updated = await Member.findOneAndUpdate({ role: 'Governor', county: county }, { $set: updateFields }, { new: true });
+            const updated = await Member.findOneAndUpdate({ role: 'Governor', county: county }, { $set: updateFields }, { returnDocument: 'after' });
             if (updated) {
               console.log(`✅ Updated details for ${county} Governor`);
               console.log(`   └─ Deputy Governor: ${governorDetails.deputyGovernor || 'Not found'}`);
@@ -1047,7 +1057,7 @@ const worker = new Worker(
             await Member.findOneAndUpdate(
               { role: 'Governor', $or: [{ county: leader.county }, { fullName: { $regex: leader.governor, $options: 'i' } }] },
               { $set: { cogCommittee: { name: leader.committee, role: 'Chairperson' } } },
-              { new: true },
+              { returnDocument: 'after' },
             );
           }
           const cogLeadership = [

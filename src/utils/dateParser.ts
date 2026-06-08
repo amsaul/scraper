@@ -9,14 +9,18 @@ interface WikipediaBirthDate {
 
 async function fetchDOBFromWikipedia(fullName: string): Promise<Date | null> {
   try {
-    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(fullName)}&format=json&origin=*`;
-    const searchRes = await axios.get(searchUrl);
+    const headers = {
+      'User-Agent': 'VeriVote-Scraper/1.0 (+https://github.com/amsaul/scraper; amsaulbosire@gmail.com)'
+    };
+    
+    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(fullName)}&format=json`;
+    const searchRes = await axios.get(searchUrl, { headers });
     const pages = searchRes.data.query.search;
     if (!pages || pages.length === 0) return null;
 
     const pageTitle = pages[0].title;
-    const contentUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&titles=${encodeURIComponent(pageTitle)}&format=json&origin=*`;
-    const contentRes = await axios.get(contentUrl);
+    const contentUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&titles=${encodeURIComponent(pageTitle)}&format=json`;
+    const contentRes = await axios.get(contentUrl, { headers });
     const pagesObj = contentRes.data.query.pages;
     const page = Object.values(pagesObj)[0] as any;
     const text = page.extract || '';

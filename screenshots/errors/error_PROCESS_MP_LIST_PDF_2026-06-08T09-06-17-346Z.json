@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-06-08T09:06:17.415Z",
+  "jobName": "PROCESS_MP_LIST_PDF",
+  "url": "https://www.parliament.go.ke/sites/default/files/2025-12/List%20of%20Members%20by%20Parties%2013th%20Parliament%20as%20at%2002122025.pdf",
+  "errorMessage": "unable to verify the first certificate; if the root CA is installed locally, try running Node.js with --use-system-ca",
+  "screenshotPath": "C:\\Users\\Lenana Academy\\Desktop\\scraper\\screenshots\\errors\\error_PROCESS_MP_LIST_PDF_2026-06-08T09-06-17-346Z.png",
+  "pageTitle": "",
+  "pageUrl": "about:blank"
+}

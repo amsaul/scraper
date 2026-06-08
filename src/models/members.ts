@@ -401,6 +401,10 @@ MemberSchema.index({ role: 1, party: 1 });
 MemberSchema.index({ county: 1, constituency: 1, ward: 1 });
 MemberSchema.index({ fullName: "text", party: "text", county: "text", role: "text" }); // For search
 
+// Include virtuals when converting documents to objects/JSON
+MemberSchema.set('toObject', { virtuals: true });
+MemberSchema.set('toJSON', { virtuals: true });
+
 // ==================== Virtual fields ====================
 MemberSchema.virtual('isPresident').get(function() {
   return this.role === 'President' || this.role === 'Deputy President';
@@ -441,6 +445,30 @@ MemberSchema.virtual('fullLocation').get(function() {
   return parts.join(' › ') || 'N/A';
 });
 
+MemberSchema.virtual('age').get(function() {
+  if (!this.dateOfBirth) {
+    return null;
+  }
+
+  const dob = new Date(this.dateOfBirth);
+  if (isNaN(dob.getTime())) {
+    return null;
+  }
+
+  const today = new Date();
+  let age = today.getUTCFullYear() - dob.getUTCFullYear();
+  const birthMonth = dob.getUTCMonth();
+  const birthDay = dob.getUTCDate();
+  const currentMonth = today.getUTCMonth();
+  const currentDay = today.getUTCDate();
+
+  if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
+    age -= 1;
+  }
+
+  return age;
+});
+
 // ==================== Methods ====================
 MemberSchema.methods.getFullProfile = function() {
   const base = {
@@ -448,6 +476,7 @@ MemberSchema.methods.getFullProfile = function() {
       name: this.fullName,
       role: this.role,
       party: this.party,
+      age: this.age,
       location: {
         county: this.county,
         constituency: this.constituency,

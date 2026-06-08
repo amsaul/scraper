@@ -101,7 +101,7 @@ app.get('/api/members', async (req, res) => {
       .sort(sort)
       .skip(skip)
       .limit(limitNum)
-      .lean(); // Use lean() for better performance
+      .lean({ virtuals: true }); // Use lean() for better performance and to include virtuals
 
     // Get total count
     const total = await Member.countDocuments(filter);
@@ -124,7 +124,7 @@ app.get('/api/members', async (req, res) => {
 // GET single member by ID
 app.get('/api/members/:id', async (req, res) => {
   try {
-    const member = await Member.findById(req.params.id).lean();
+    const member = await Member.findById(req.params.id).lean({ virtuals: true });
     
     if (!member) {
       return res.status(404).json({ error: 'Member not found' });
@@ -188,7 +188,7 @@ app.get('/api/stats', async (req, res) => {
     const recentMembers = await Member.find()
       .sort({ createdAt: -1 })
       .limit(5)
-      .lean();
+      .lean({ virtuals: true });
 
     res.json({
       totalMembers,

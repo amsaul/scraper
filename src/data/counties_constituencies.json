@@ -1,0 +1,196 @@
+{
+  "Mombasa": [
+    "MOMBASA"
+  ],
+  "Kwale": [
+    "KWALE"
+  ],
+  "Kilifi": [
+    "KILIFI",
+    "KILIFI NORTH",
+    "KILIFI SOUTH"
+  ],
+  "Tana River": [
+    "TANA RIVER"
+  ],
+  "Lamu": [
+    "LAMU",
+    "LAMU EAST",
+    "LAMU WEST"
+  ],
+  "Taita Taveta": [
+    "TAITA TAVETA"
+  ],
+  "Garissa": [
+    "GARISSA"
+  ],
+  "Wajir": [
+    "WAJIR",
+    "WAJIR EAST",
+    "WAJIR NORTH",
+    "WAJIR SOUTH",
+    "WAJIR WEST"
+  ],
+  "Mandera": [
+    "MANDERA",
+    "MANDERA EAST",
+    "MANDERA NORTH",
+    "MANDERA SOUTH",
+    "MANDERA WEST"
+  ],
+  "Marsabit": [
+    "MARSABIT"
+  ],
+  "Isiolo": [
+    "ISIOLO",
+    "ISIOLO NORTH"
+  ],
+  "Meru": [
+    "MERU"
+  ],
+  "Tharaka Nithi": [
+    "THARAKA NITHI"
+  ],
+  "Embu": [
+    "EMBU"
+  ],
+  "Kitui": [
+    "KITUI",
+    "KITUI CENTRAL",
+    "KITUI EAST",
+    "KITUI RURAL",
+    "KITUI SOUTH",
+    "KITUI WEST"
+  ],
+  "Machakos": [
+    "MACHAKOS",
+    "MACHAKOS TOWN"
+  ],
+  "Makueni": [
+    "MAKUENI"
+  ],
+  "Nyandarua": [
+    "NYANDARUA"
+  ],
+  "Nyeri": [
+    "NYERI",
+    "NYERI TOWN"
+  ],
+  "Kirinyaga": [
+    "KIRINYAGA",
+    "KIRINYAGA CENTRAL"
+  ],
+  "Muranga": [
+    "MURANG’A"
+  ],
+  "Kiambu": [
+    "KIAMBU"
+  ],
+  "Turkana": [
+    "TURKANA",
+    "TURKANA CENTRAL",
+    "TURKANA EAST",
+    "TURKANA NORTH",
+    "TURKANA SOUTH",
+    "TURKANA WEST"
+  ],
+  "West Pokot": [
+    "WEST POKOT"
+  ],
+  "Samburu": [
+    "SAMBURU",
+    "SAMBURU EAST",
+    "SAMBURU NORTH",
+    "SAMBURU WEST"
+  ],
+  "Trans Nzoia": [
+    "TRANS NZOIA"
+  ],
+  "Uasin Gishu": [
+    "UASIN GISHU"
+  ],
+  "Elgeyo Marakwet": [
+    "ELGEYO MARAKWET"
+  ],
+  "Nandi": [
+    "NANDI",
+    "NANDI HILLS"
+  ],
+  "Baringo": [
+    "BARINGO",
+    "BARINGO CENTRAL",
+    "BARINGO NORTH",
+    "BARINGO SOUTH"
+  ],
+  "Laikipia": [
+    "LAIKIPIA",
+    "LAIKIPIA EAST",
+    "LAIKIPIA NORTH",
+    "LAIKIPIA WEST"
+  ],
+  "Nakuru": [
+    "NAKURU",
+    "NAKURU TOWN EAST",
+    "NAKURU TOWN WEST"
+  ],
+  "Narok": [
+    "NAROK",
+    "NAROK EAST",
+    "NAROK NORTH",
+    "NAROK SOUTH",
+    "NAROK WEST"
+  ],
+  "Kajiado": [
+    "KAJIADO",
+    "KAJIADO CENTRAL",
+    "KAJIADO EAST",
+    "KAJIADO NORTH",
+    "KAJIADO SOUTH",
+    "KAJIADO WEST"
+  ],
+  "Kericho": [
+    "KERICHO"
+  ],
+  "Bomet": [
+    "BOMET",
+    "BOMET CENTRAL",
+    "BOMET EAST"
+  ],
+  "Kakamega": [
+    "KAKAMEGA"
+  ],
+  "Vihiga": [
+    "VIHIGA"
+  ],
+  "Bungoma": [
+    "BUNGOMA"
+  ],
+  "Busia": [
+    "BUSIA"
+  ],
+  "Siaya": [
+    "SIAYA"
+  ],
+  "Kisumu": [
+    "KISUMU",
+    "KISUMU CENTRAL",
+    "KISUMU EAST",
+    "KISUMU WEST"
+  ],
+  "Homa Bay": [
+    "HOMA BAY",
+    "HOMA BAY TOWN"
+  ],
+  "Migori": [
+    "MIGORI"
+  ],
+  "Kisii": [
+    "KISII"
+  ],
+  "Nyamira": [
+    "NYAMIRA"
+  ],
+  "Nairobi": [
+    "NAIROBI"
+  ]
+}

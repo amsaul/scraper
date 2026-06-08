@@ -1,9 +1,0 @@
-{
-  "timestamp": "2026-05-14T10:29:47.406Z",
-  "jobName": "PROCESS_MP_LIST_PDF",
-  "url": "https://www.parliament.go.ke/sites/default/files/2025-12/List%20of%20Members%20by%20Parties%2013th%20Parliament%20as%20at%2002122025.pdf",
-  "errorMessage": "pdfParse is not a function",
-  "screenshotPath": "C:\\Users\\Lenana Academy\\Downloads\\scraper\\screenshots\\errors\\error_PROCESS_MP_LIST_PDF_2026-05-14T10-29-47-325Z.png",
-  "pageTitle": "",
-  "pageUrl": "about:blank"
-}
